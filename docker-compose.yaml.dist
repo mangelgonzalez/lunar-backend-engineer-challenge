@@ -1,0 +1,29 @@
+volumes:
+  rockets-mysql: {}
+
+services:
+  rockets-redis:
+    image: redis:alpine
+    container_name: rockets-redis
+    ports:
+      - "6379:6379"
+
+  rockets-mysql:
+    image: 'mysql/mysql-server:8.0'
+    container_name: rockets-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: '${MYSQL_PASS}'
+      MYSQL_ROOT_HOST: "%"
+      MYSQL_DATABASE: '${MYSQL_DATABASE}'
+      MYSQL_USER: '${MYSQL_USER}'
+      MYSQL_PASSWORD: '${MYSQL_PASS}'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    ports:
+      - '3306:3306'
+    volumes:
+      - 'rockets-mysql:/var/lib/mysql'
+      - './_ci/build/mysql/init:/docker-entrypoint-initdb.d'
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-pcan_all" ]
+      retries: 3
+      timeout: 5s
